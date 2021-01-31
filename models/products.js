@@ -1,6 +1,6 @@
 const S = require("sequelize");
 const db = require("../db");
-const Page = require("../../10-Wiki/models/Page");
+const Op = S.Op
 
 class Product extends S.Model {}
 
@@ -17,12 +17,32 @@ Product.init(
     },
     available: {
       type: S.BOOLEAN,
-      defaultValue: true
+      
     },
     stock: {
-      type: S.INTEGER
+      type: S.INTEGER,
+      defaultValue : 0,
+      set(stock){
+        this.setDataValue('available', (stock>0 ? true : false));
+        this.setDataValue('stock', stock);
+       
+      }
      
     },
+    priceGetter:{
+      type : S.VIRTUAL,
+      get(){
+        return `$${this.price}`
+      }
+    },
+    /* avSetter:{
+      type : S.VIRTUAL,
+      set(stock){
+        
+        if(stock == 0) this.available = false;
+        console.log(this.available)
+      }
+    } */
   },
 {
     sequelize: db,
@@ -31,10 +51,10 @@ Product.init(
 );
 
 Product.findStock = ()=>{
-return  Product.findAll(
+return Product.findAll(
    {
      where:{
-      available : false
+      [Op.or]:[{available : false},{stock:0}]
      }
    }
  )
@@ -42,6 +62,22 @@ return  Product.findAll(
 
 
 
+Product.beforeCreate((product, options) => {
+ 
+    
+    if (product.available == false) {
+       product.name = `${product.name} isn't available`;
+     }
+     console.log(product.name);
+   });
+
+   Product.prototype.earning = function() {
+    return this.stock * this.price
+   };
+
+
+
+  
 
 
 module.exports = Product;

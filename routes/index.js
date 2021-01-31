@@ -1,36 +1,113 @@
 const express = require('express')
-const router = express.Router();
-const {Product,Category} = require('../models')
+const Product = require('../models/products')
+const Category = require('../models/categories')
+const router = express.Router()
+const S = require("sequelize");
+const Op = S.Op
 
 
-
-router.get("/products",(req,res)=>{
-     product.findAll().
-     then(hola =>{
-         res.send(hola)
+// GET PARA ENCONTRAR SEGUN STOCK DISPONIBLE
+router.get("/stock",(req,res)=>{
+  Product.findStock()
+  .then(product=>{
+      res.json(product.length)
+  })
      })
 
-})
 
-router.get("/products/:id",(req,res)=>{
+//GET DE ARRANQUE PARA ENCONTRAR TODOS LOS PRODUCTOS
+     router.get("/",(req,res)=>{
+  
+        Product.findAll()
+        .then(product=>{
+            res.send(product)
+        })
+           })
+
+//GET DE ARRANQUE PARA ENCONTRAR TODOS LOS PRODUCTOS
+     router.get("/", (req, res) => {
+       Product.findAll()
+       .then((product) => {
+         res.send(product);
+       });
+     });
+
+//GET DE ARRANQUE PARA ENCONTRAR TODOS LOS PRODUCTOS
+     router.get("/earning/:name", (req, res,next) => {
+       let nombre = req.params.name;
+       return Product.findOne({
+         where: {
+           [Op.and]: [{ name: nombre }, { available: true }],
+         },
+       }).then((prod) => {
+         res.json( prod.earning());
+       })
+       .catch(next)
+    
+     });
+
+//GET PARA ENCONTRAR LOS PRODUCTOS SEGUN SU ID
+router.get("/:id",(req,res,next)=>{
     let id = req.params.id
-    res.send("i'm inside of the page");
+    Product.findByPk(id)
+    .then(product=>{
+        res.send(product)
+    })
+    .catch(next)
 
 })
 
-router.post("/products",(req,res)=>{
-    res.send("i'm inside of the page");
+//POST PARA CREAR NUEVOS PRODUCTOS
+router.post("/",(req,res,next)=>{
+    Product.create(req.body)
+      .then(product => {
+        return res.send(product)
+      })
+      .catch(next);
+    
 
 })
 
-router.put("/products/:id",(req,res)=>{
+//POST PARA CREAR NUEVA CATEGORIA
+router.post("/category",(req,res,next)=>{
+    Category.create(req.body)
+      .then(product => {
+        return res.send(product)
+      })
+      .catch(next);
+    
+
+})
+
+//PUT PARA EDITAR LOS PRODUCTOS
+router.put("/:id",(req,res,next)=>{
     let id = req.params.id
-    res.send("i'm inside of the page");
+    Product.update(req.body,{
+        where: {
+        id: id,
+      }
+    })
+    
+    .then(() => {
+        return res.send("changed")
+    })
+    .catch(next)
 
 })
-router.delete("/products/:id",(req,res)=>{
+
+//DELETE PARA ELIMINAR LOS PRODUCTOS
+router.delete("/:id",(req,res)=>{
     let id = req.params.id
-    res.send("i'm inside of the page");
+    Product.destroy({
+        where: {
+        id: id,
+      }
+    })
+    
+    .then(() => {
+        return res.send("destroyed")
+    })
+    .catch(next)
 
 })
 
