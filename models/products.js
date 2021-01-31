@@ -35,14 +35,6 @@ Product.init(
         return `$${this.price}`
       }
     },
-    /* avSetter:{
-      type : S.VIRTUAL,
-      set(stock){
-        
-        if(stock == 0) this.available = false;
-        console.log(this.available)
-      }
-    } */
   },
 {
     sequelize: db,
